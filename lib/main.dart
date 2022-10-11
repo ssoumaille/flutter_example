@@ -1,28 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:string_validator/string_validator.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'person.dart';
+import 'widgets_icon_button.dart';
+
+void main() async {
+  runApp(const ProviderScope(child: MyApp()));
 }
+
+final stateProvider =
+    StateNotifierProvider<PersonService, Person>((ref) => PersonService());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   static const appTitle = 'Flutter Demo';
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: appTitle,
-        home: const MyHomePage(title: appTitle),
-        theme: ThemeData.light(),
-        initialRoute: '/',
-        routes: <String, WidgetBuilder>{
-          '/1': (context) => const Page1(),
-          '/2': (context) => const Page2(),
-          '/3': (context) => const Page3(),
-          '/4': (context) => const Page4(),
-        }
-      );
+  Widget build(_) => MaterialApp(
+          title: appTitle,
+          home: const MyHomePage(title: appTitle),
+          theme: ThemeData(
+            colorScheme: const ColorScheme.dark(),
+            primaryColor: Colors.black54,
+          ),
+          initialRoute: '/',
+          routes: <String, WidgetBuilder>{
+            '/1': (context) => const Page1(),
+            '/2': (context) => const Page2(),
+            '/3': (context) => const Page3(),
+            '/4': (context) => const Page4(),
+          });
 }
 
 class MyHomePage extends StatefulWidget {
@@ -31,35 +40,25 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<MyHomePage> {
+class HomePageState extends State<MyHomePage> {
   final controller = PageController();
 
   int pageIndex = 0;
 
-  final pages = const [Page1(), Page2(), Page3(), Page4(),];
+  final pages = const [Page1(), Page2(), Page3(), Page4()];
 
-  Widget _buildPageView() => PageView(
-        controller: controller,
-        children: const [
-          Page1(),
-          Page2(),
-          Page3(),
-          Page4(),
-        ],
-      );
-
-  Widget _buildDrawer() => Drawer(
+  Widget _buildDrawer(context) => Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
+            DrawerHeader(
               decoration: BoxDecoration(
-                color: Color.fromARGB(255, 129, 154, 235),
+                color: Theme.of(context).primaryColor,
               ),
-              child: Text('Drawer Header'),
+              child: const Text('Drawer Header'),
             ),
             ListTile(
               title: const Text('Page 1'),
@@ -98,15 +97,15 @@ class _HomePageState extends State<MyHomePage> {
       );
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  build(context) => Scaffold(
         appBar: AppBar(title: const Text(MyApp.appTitle)),
         body: pages[pageIndex],
-        drawer: _buildDrawer(),
+        drawer: _buildDrawer(context),
         bottomNavigationBar: Container(
           height: 60,
-          decoration: const BoxDecoration(
-            color: Colors.blue,
-            borderRadius: BorderRadius.only(
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor,
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
             ),
@@ -114,79 +113,102 @@ class _HomePageState extends State<MyHomePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              iconButton1(context),
-              iconButton2(context),
-              iconButton3(context),
-              iconButton4(context),
+              bottomBarButton1(context),
+              bottomBarButton2(context),
+              bottomBarButton3(context),
+              bottomBarButton4(context),
             ],
           ),
         ),
       );
 }
 
-Widget iconButton1(context) => IconButton(
-      enableFeedback: false,
-      onPressed: () => Navigator.pushNamed(context, '/1'),
-      icon: const Icon(Icons.home_outlined, color: Colors.white, size: 35),
-    );
+class PersonService extends StateNotifier<Person> {
+  PersonService() : super(Person(firstName: '', lastName: '', age: 33));
 
-Widget iconButton2(context) => IconButton(
-      enableFeedback: false,
-      onPressed: () => Navigator.pushNamed(context, '/2'),
-      icon: const Icon(Icons.work_outline_outlined, color: Colors.white, size: 35),
-    );
+  void firstNamePersonUpdate(String name) =>
+      state = state.copyWith(firstName: name);
 
-Widget iconButton3(context) => IconButton(
-  enableFeedback: false,
-  onPressed: () => Navigator.pushNamed(context, '/3'),
-  icon: const Icon(Icons.widgets_outlined, color: Colors.white, size: 35),
-);
+  void lastNamePersonUpdate(String name) =>
+      state = state.copyWith(lastName: name);
 
-Widget iconButton4(context) => IconButton(
-  enableFeedback: false,
-  onPressed: () => Navigator.pushNamed(context, '/4'),
-  icon: const Icon(Icons.person_outline, color: Colors.white, size: 35),
-);
+  void agePersonUpdate(int age) => state = state.copyWith(age: age);
+}
 
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
+class Page1 extends ConsumerWidget {
+  const Page1({super.key});
 
   @override
-  build(context) => Scaffold(
-        backgroundColor: const Color(0xffC4DFCB),
-        body: Center(
-          child: GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/'),
-            child: Text(
-              "Page Number 1",
-              style: TextStyle(
-                color: Colors.green.shade900,
-                fontSize: 45,
-                fontWeight: FontWeight.w500,
+  build(context, ref) => Scaffold(
+        backgroundColor: const Color(0xff878484),
+        body: Container(
+          margin: const EdgeInsets.fromLTRB(48, 48, 48, 48),
+          child: Column(
+            children: [
+              TextField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'First name',
+                ),
+                onChanged: (String text) => ref
+                    .read(stateProvider.notifier)
+                    .firstNamePersonUpdate(text),
               ),
-            ),
+              TextField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Last name',
+                ),
+                onChanged: (String text) =>
+                    ref.read(stateProvider.notifier).lastNamePersonUpdate(text),
+              ),
+              TextField(
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'age',
+                  ),
+                  onChanged: (String text) {
+                    if (isNumeric(text)) {
+                      ref
+                          .read(stateProvider.notifier)
+                          .agePersonUpdate(int.parse(text));
+                    }
+                  }),
+              Text(
+                ref.read(stateProvider).firstName == ''
+                    ? 'Name to update'
+                    : ''
+                        '${ref.read(stateProvider).firstName} ${ref.read(stateProvider).lastName} '
+                        'is ${ref.read(stateProvider).age} years old',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       );
 }
 
-class Page2 extends StatelessWidget {
+class Page2 extends ConsumerWidget {
   const Page2({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Container(
-        child: Material(
-          color: const Color(0xffC4DFCB),
-          child: Center(
-              child: Text(
-            "Page Number 2",
-            style: TextStyle(
-              color: Colors.green[900],
-              fontSize: 45,
-              fontWeight: FontWeight.w500,
-            ),
-          )),
-        ),
+  build(_, ref) => Material(
+        color: const Color(0xffFFFFFF),
+        child: Center(
+            child: Text(
+          '${ref.read(stateProvider).firstName} '
+          '${ref.read(stateProvider).lastName} '
+          'is ${ref.read(stateProvider).age} years old',
+          style: TextStyle(
+            color: Colors.green[900],
+            fontSize: 36,
+            fontWeight: FontWeight.w500,
+          ),
+        )),
       );
 }
 
@@ -194,38 +216,36 @@ class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Container(
-          child: Material(
-            color: const Color(0xffC4DFCB),
-            child: Center(
-              child: Text(
-                "Page Number 3",
-                style: TextStyle(
-                  color: Colors.green[900],
-                  fontSize: 45,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+  build(_) => Material(
+        color: const Color(0xffFFFFFF),
+        child: Center(
+          child: Text(
+            "Page Number 3",
+            style: TextStyle(
+              color: Colors.green[900],
+              fontSize: 45,
+              fontWeight: FontWeight.w500,
             ),
-      ));
+          ),
+        ),
+      );
 }
 
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Container(
-          child: Material(
-            color: const Color(0xffC4DFCB),
-            child: Center(
-              child: Text(
-                "Page Number 4",
-                style: TextStyle(
-                  color: Colors.green[900],
-                  fontSize: 45,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+  build(_) => Material(
+        color: const Color(0xffFFFFFF),
+        child: Center(
+          child: Text(
+            "Page Number 4",
+            style: TextStyle(
+              color: Colors.green[900],
+              fontSize: 45,
+              fontWeight: FontWeight.w500,
             ),
-      ));
+          ),
+        ),
+      );
 }
