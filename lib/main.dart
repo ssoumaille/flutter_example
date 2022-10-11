@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:string_validator/string_validator.dart';
 
-import 'person.dart';
+import 'person/person.dart';
 import 'widgets_icon_button.dart';
 
 void main() async {
@@ -11,6 +11,11 @@ void main() async {
 
 final stateProvider =
     StateNotifierProvider<PersonService, Person>((ref) => PersonService());
+
+enum Routes {
+  user_creation,
+  user_info,
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -23,12 +28,12 @@ class MyApp extends StatelessWidget {
           home: const MyHomePage(title: appTitle),
           theme: ThemeData(
             colorScheme: const ColorScheme.dark(),
-            primaryColor: Colors.black54,
+            primaryColor: Colors.black45,
           ),
           initialRoute: '/',
           routes: <String, WidgetBuilder>{
-            '/1': (context) => const Page1(),
-            '/2': (context) => const Page2(),
+            '/${Routes.user_creation.name}': (context) => const Page1(),
+            '/${Routes.user_info.name}': (context) => const Page2(),
             '/3': (context) => const Page3(),
             '/4': (context) => const Page4(),
           });
@@ -52,45 +57,29 @@ class HomePageState extends State<MyHomePage> {
 
   Widget _buildDrawer(context) => Drawer(
         child: ListView(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.all(8),
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
               ),
-              child: const Text('Drawer Header'),
+              child: const Text('Header'),
             ),
             ListTile(
-              title: const Text('Page 1'),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-                Navigator.pushNamed(context, '/1');
-              },
+              title: const Text('Implement a User'),
+              onTap: () => Navigator.pushNamed(context, '/${Routes.user_creation.name}'),
             ),
             ListTile(
-              title: const Text('Page 2'),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-                Navigator.pushNamed(context, '/2');
-              },
+              title: const Text('User information'),
+              onTap: () => Navigator.pushNamed(context, '/${Routes.user_info.name}'),
             ),
             ListTile(
               title: const Text('Page 3'),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-                Navigator.pushNamed(context, '/3');
-              },
+              onTap: () => Navigator.pushNamed(context, '/3'),
             ),
             ListTile(
               title: const Text('Page 4'),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-                Navigator.pushNamed(context, '/4');
-              },
+              onTap: () => Navigator.pushNamed(context, '/4'),
             ),
           ],
         ),
@@ -177,9 +166,9 @@ class Page1 extends ConsumerWidget {
               Text(
                 ref.read(stateProvider).firstName == ''
                     ? 'Name to update'
-                    : ''
-                        '${ref.read(stateProvider).firstName} ${ref.read(stateProvider).lastName} '
-                        'is ${ref.read(stateProvider).age} years old',
+                    : '${ref.read(stateProvider).firstName} '
+                      '${ref.read(stateProvider).lastName} '
+                      'is ${ref.read(stateProvider).age} years old',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 36,
