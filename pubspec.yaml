@@ -39,6 +39,9 @@ dependencies:
   freezed_annotation: ^2.1.0
   json_annotation: ^4.7.0
   flutter_riverpod:
+  logging:
+  firebase_core:
+  cloud_firestore:
   string_validator: ^0.3.0
 
 dev_dependencies:
